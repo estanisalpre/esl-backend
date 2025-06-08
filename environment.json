@@ -1,0 +1,29 @@
+{
+  "id": "12345678-1234-1234-1234-123456789abc",
+  "name": "API Auth Testing",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/auth",
+      "enabled": true
+    },
+    {
+      "key": "testUsername",
+      "value": "estanis",
+      "enabled": true
+    },
+    {
+      "key": "testEmail",
+      "value": "estanis@mail.com",
+      "enabled": true
+    },
+    {
+      "key": "testPassword",
+      "value": "123456",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2025-06-06T00:00:00.000Z",
+  "_postman_exported_using": "Postman/10.0.0"
+}
