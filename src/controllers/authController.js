@@ -6,6 +6,7 @@ import { avatar_base_64 } from '../avatar-data.js';
 // DEFAULT AVATAR - base64
 const defaultAvatarBase64 = avatar_base_64;
 
+// register new user
 async function register(req, res) {
   const { username, email, password } = req.body;
 
@@ -54,6 +55,7 @@ async function register(req, res) {
   }
 }
 
+// login user
 async function login(req, res) {
   const { email, password } = req.body;
 
