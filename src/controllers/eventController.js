@@ -64,4 +64,24 @@ async function getAllEvents(req, res) {
   }
 }
 
-export default { getAllEvents, createEvent };
+// get all the events of the user
+async function getUserEvents(req, res) {
+  try {
+    const userId = req.user.id;
+
+    const [events] = await pool.query(
+      `SELECT e.*
+       FROM event_registrations er
+       JOIN events e ON e.id = er.event_id
+       WHERE er.user_id = ?`,
+      [userId]
+    );
+
+    res.status(200).json({ events });
+  } catch (err) {
+    console.error('Error al obtener eventos del usuario:', err);
+    res.status(500).json({ message: 'Error interno al obtener los eventos del usuario' });
+  }
+}
+
+export default { getAllEvents, createEvent, getUserEvents };
