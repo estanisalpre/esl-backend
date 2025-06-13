@@ -28,12 +28,7 @@ async function uploadResults(req, res) {
 
     // Validar tipo de sesión contra el JSON cargado
     const sessionName = sessionType.toUpperCase();
-
-    console.log(sessionName);
-
     const sessionData = data.data.session_results.find(s => s.simsession_name === sessionName);
-
-    console.log(sessionData)
     if (!sessionData) {
       return res.status(400).json({ message: `No se encontró la sesión '${sessionName}' en el archivo` });
     }
