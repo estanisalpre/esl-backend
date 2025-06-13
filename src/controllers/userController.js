@@ -1,44 +1,87 @@
 import pool from "../db.js";
 
 async function getStats(req, res) {
-  const userId = req.params.id;
+  const userId = Number(req.params.id);
+  if (!userId) return res.status(400).json({ message: 'User ID inválido' });
 
   try {
-    const [general] = await pool.query(
-      `
-      SELECT 
-        COUNT(*) AS total_participaciones,
-        SUM(points_earned) AS total_puntos,
-        SUM(CASE WHEN finish_position = 0 AND s.session_type = 'race' THEN 1 ELSE 0 END) AS victorias
-      FROM session_results r
-      JOIN sessions s ON r.session_id = s.id
-      WHERE r.user_id = ?
-    `,
+    // 1) Estadísticas generales
+    const [[generalStats]] = await pool.query(
+      `SELECT
+        COUNT(sr.id) AS total_participaciones,
+        COALESCE(SUM(sr.points_earned),0) AS total_puntos,
+        SUM(CASE WHEN s.session_type='race' AND sr.finish_position=1 THEN 1 ELSE 0 END) AS victorias,
+        SUM(CASE WHEN s.session_type='race' AND sr.finish_position <= 3 AND sr.finish_position > 0 THEN 1 ELSE 0 END) AS podiums,
+        SUM(CASE WHEN s.session_type='qualify' AND sr.finish_position=1 THEN 1 ELSE 0 END) AS poles,
+        SUM(CASE WHEN s.session_type='practice' THEN 1 ELSE 0 END) AS practices_participated,
+        SUM(CASE WHEN s.session_type='qualify' THEN 1 ELSE 0 END) AS qualifies_participated,
+        SUM(CASE WHEN s.session_type='race' THEN 1 ELSE 0 END) AS races_participated
+      FROM session_results sr
+      JOIN sessions s ON s.id = sr.session_id
+      WHERE sr.user_id = ?`,
       [userId]
     );
 
+    // Extra: temporadas únicas desde league_rankings
+    const [[{ seasons_participated }]] = await pool.query(
+      `SELECT COUNT(DISTINCT season_id) AS seasons_participated
+       FROM league_rankings
+       WHERE user_id = ?`,
+      [userId]
+    );
+
+    generalStats.seasons_participated = seasons_participated;
+    //console.log('generalStats:', generalStats);
+
+    // 2) Mejor posición en ranking por temporada y ligas ganadas
+    const [[rankStats]] = await pool.query(
+      `SELECT
+         MIN(ranking_pos) AS best_championship_rank,
+         SUM(CASE WHEN ranking_pos = 1 THEN 1 ELSE 0 END) AS leagues_won
+       FROM (
+         SELECT lr.season_id,
+                lr.league_id,
+                ROW_NUMBER() OVER (
+                  PARTITION BY lr.season_id 
+                  ORDER BY lr.total_points DESC
+                ) AS ranking_pos
+         FROM league_rankings lr
+         WHERE lr.user_id = ?
+       ) t`,
+      [userId]
+    );
+
+    //console.log('rankStats:', rankStats);
+
+    // 3) Participaciones por liga
     const [ligas] = await pool.query(
-      `
-      SELECT l.id, l.name, COUNT(*) AS participaciones
-      FROM session_results r
-      JOIN sessions s ON r.session_id = s.id
-      JOIN events e ON s.event_id = e.id
-      JOIN leagues l ON e.league_id = l.id
-      WHERE r.user_id = ?
-      GROUP BY l.id
-    `,
+      `SELECT
+         l.id,
+         l.name,
+         COUNT(sr.id) AS participaciones
+       FROM session_results sr
+       JOIN sessions s ON s.id = sr.session_id
+       JOIN events e ON e.id = s.event_id
+       JOIN leagues l ON l.id = e.league_id
+       WHERE sr.user_id = ?
+       GROUP BY l.id, l.name`,
       [userId]
     );
 
+    //console.log('ligas:', ligas);
+
+    // Respuesta final
     res.status(200).json({
-      general: general[0],
-      ligas,
+      general: generalStats || {},
+      ranking: rankStats || {},
+      ligas: ligas || []
     });
   } catch (err) {
-    console.error("Error obteniendo estadísticas:", err);
-    res.status(500).json({ message: "Error interno del servidor" });
+    console.error('Error obteniendo estadísticas:', err);
+    res.status(500).json({ message: 'Error interno del servidor' });
   }
 }
+
 
 async function updateAvatarUrl(req, res) {
   const userId = req.user.id;
