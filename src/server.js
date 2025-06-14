@@ -10,6 +10,7 @@ import resultRoutes from './routes/resultRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import leagueRoutes from './routes/leagueRoutes.js';
 import inscriptionRoutes from './routes/inscriptionRoutes.js';
+import trackRoutes from './routes/trackRoutes.js';
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
@@ -29,6 +30,7 @@ app.use('/result', resultRoutes);
 app.use('/event', eventRoutes);
 app.use('/league', leagueRoutes);
 app.use('/inscription', inscriptionRoutes);
+app.use('/track', trackRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3001;
