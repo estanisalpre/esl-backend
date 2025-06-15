@@ -6,6 +6,7 @@ import resultsController from '../controllers/resultController.js';
 const router = express.Router();
 const upload = multer(); 
 
+//post
 router.post('/upload', authMiddleware, upload.single('file'), resultsController.uploadResults);
 
 export default router;
