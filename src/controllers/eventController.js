@@ -3,7 +3,7 @@ import pool from '../db.js';
 // create new event
 async function createEvent(req, res) {
   try {
-    const { league_id, name, track_name, week_number, start_date } = req.body;
+    const { league_id, name, track_id, week_number, start_date } = req.body;
 
     if (!league_id || !name || !week_number || !start_date) {
       return res.status(400).json({ message: 'Faltan campos obligatorios' });
@@ -20,9 +20,9 @@ async function createEvent(req, res) {
     } */
 
     const [result] = await pool.query(`
-      INSERT INTO events (league_id, name, track_name, week_number, start_date)
+      INSERT INTO events (league_id, name, track_id, week_number, start_date)
       VALUES (?, ?, ?, ?, ?)
-    `, [league_id, name, track_name, week_number, start_date]);
+    `, [league_id, name, track_id, week_number, start_date]);
 
     const eventId = result.insertId;
 
@@ -48,7 +48,6 @@ async function getAllEvents(req, res) {
       SELECT 
         e.id, 
         e.name, 
-        e.track_name, 
         e.week_number, 
         e.start_date,
         l.name as league_name

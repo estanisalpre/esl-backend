@@ -6,7 +6,7 @@ export function generateAccessToken(user) {
   return jwt.sign(
     { id: user.id, email: user.email, username: user.username, role: user.role },
     SECRET,
-    { expiresIn: '15m' }
+    { expiresIn: '60m' }
   );
 }
 
