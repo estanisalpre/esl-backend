@@ -5,7 +5,7 @@ import authMiddleware from '../middlewares/authMiddleware.js';
 const router = express.Router();
 
 // get
-router.get('/all', authMiddleware, eventController.getAllEvents);
+router.get('/all', eventController.getAllEvents);
 router.get('/user-events', authMiddleware, eventController.getUserEvents);
 
 // post

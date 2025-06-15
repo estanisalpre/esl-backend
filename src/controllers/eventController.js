@@ -49,10 +49,12 @@ async function getAllEvents(req, res) {
         e.id, 
         e.name, 
         e.week_number, 
+        e.track_id,
         e.start_date,
         l.name as league_name
       FROM events e
       JOIN leagues l ON e.league_id = l.id
+      JOIN tracks t ON e.track_id = t.id
       ORDER BY e.week_number ASC
     `);
 
