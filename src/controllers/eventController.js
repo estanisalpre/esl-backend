@@ -85,4 +85,33 @@ async function getUserEvents(req, res) {
   }
 }
 
-export default { getAllEvents, createEvent, getUserEvents };
+// delete event
+async function deleteEvent(req, res) {
+  try {
+    const eventId = req.params.id;
+
+    await pool.query(`DELETE FROM events WHERE id = ?`, [eventId]);
+    res.status(200).json({ message: 'Evento eliminado con éxito' });
+  } catch (err) {
+    console.error('Error al eliminar el evento:', err);
+    res.status(500).json({ message: 'Error interno al eliminar el evento' });
+  }
+}
+
+// update event
+async function updateEvent(req, res) {
+  const { id } = req.params;
+  const { name, week_number, start_date, track_id } = req.body;
+
+  const query = `
+    UPDATE events
+    SET name = ?, week_number = ?, start_date = ?, track_id = ?
+    WHERE id = ?
+  `;
+
+  await pool.query(query, [name, week_number, start_date, track_id, id]);
+
+  res.status(200).json({ message: 'Evento actualizado con éxito' });
+}
+
+export default { getAllEvents, createEvent, getUserEvents, deleteEvent, updateEvent };
